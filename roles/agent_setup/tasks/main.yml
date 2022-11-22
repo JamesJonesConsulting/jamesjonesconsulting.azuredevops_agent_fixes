@@ -24,9 +24,3 @@
     loop_var: agent
   vars:
     vsts_agent_version: "{{ vsts_agent_release_tag | regex_replace('v') }}"
-
-# BIN_VER=$(curl --silent https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq .tag_name -r)
-# BIN_VER=${BIN_VER#"v"}
-# echo ${BIN_VER}
-# curl --silent -o vsts-agent.tar.gz "https://vstsagentpackage.azureedge.net/agent/${BIN_VER}/vsts-agent-linux-x64-${BIN_VER}.tar.gz"
-# tar zxvf vsts-agent.tar.gz -C /opt/vsts-agent

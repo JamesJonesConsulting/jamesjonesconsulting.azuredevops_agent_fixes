@@ -1,39 +1,15 @@
 ---
-- name: Populate service facts
-  ansible.builtin.service_facts:
-# - name: Print service facts
-#   ansible.builtin.debug:
-#     var: ansible_facts.services
-- name: Find vsts services 
-  set_fact:
-    vsts_services: "{{ (vsts_services | default([])) + [svc] }}"
-  when:
-    - "svc.key.startswith('vsts.agent.')"
-  loop: "{{ ansible_facts.services | dict2items }}"
-  loop_control:
-    loop_var: svc
 - name: Ensure overlay directories existing
   file:
-    path: "/etc/systemd/system/{{ svc.key }}.d"
+    path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
     state: directory 
-  loop: "{{ vsts_services }}"
-  loop_control:
-    loop_var: svc
 - name: Add overlays
   template:
     src: templates/overlay.conf.j2
-    dest: "/etc/systemd/system/{{ svc.key }}.d/overlay.conf"
-  vars:
-    vsts_agent_working_dir: "{{ lookup('pipe',(['cat /etc/systemd/system/vsts.agent.',svc.key,' | grep WorkingDirectory'] | join(''))).split('=')[1] }}"
-  loop: "{{ vsts_services }}"
-  loop_control:
-    loop_var: svc
+    dest: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d/overlay.conf"
 - name: Perform a daemon-reload to pick up all the new overlays
   ansible.builtin.systemd:
     daemon_reload: yes
-- name: Restart all the VSTS agents
-  ansible.builtin.systemd:
-    name: "{{ svc.key }}"
-  loop: "{{ vsts_services }}"
-  loop_control:
-    loop_var: svc
+# - name: Restart all the VSTS agents
+#   ansible.builtin.systemd:
+#     name: "{{ vsts_systemd_service_name }}"

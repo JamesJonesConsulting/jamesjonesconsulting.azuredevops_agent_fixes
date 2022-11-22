@@ -9,11 +9,70 @@
   ansible.builtin.unarchive:
     src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
     dest: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
-    remote_src: yes
-- name: Change ownership to the agent user
-  file:
-    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
-    state: directory
     owner: "{{ agent.username }}"
     group: "{{ agent.username }}"   
-    recurse: true 
+    remote_src: yes
+- name: Configure the install of the vsts agent 
+  command: "./config.sh {{ opts | join(' ') }}"
+  become: "{{ agent.username }}"
+  environment: "{{ vsts_agent_environment }}"
+  args:
+    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+  vars:
+    opts:
+      - "--unattended"
+      - "--acceptTeeEula"
+      - "--url {{ vsts_agent_url }}"
+      - "--auth PAT"
+      - "--token {{ vsts_agent_registration_token }}"
+      - "--pool {{ agent.pool }}"
+      - "--replace"
+      - "--work {{ vsts_agent_base_folder }}/{{ agent.folder }}"
+- name: Update the environment file 
+  ini_file:
+    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}/.env"
+    option: "{{ cnf.key }}"
+    value: "{{ cnf.value }}"
+    section: null
+    no_extra_spaces: true
+  loop: "{{ vsts_agent_environment | dict2items }}"
+  loop_control:
+    loop_var: cnf
+- name: Install the service 
+  command: "./svc.sh {{ cmd }}"
+  loop:
+    - install
+  loop_control:
+    loop_var: cmd
+  args:
+    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+- name: Reload systemd 
+  ansible.builtin.systemd:
+    daemon_reload: yes
+- name: Populate service facts
+  ansible.builtin.service_facts:
+- name: Match services running from that folder 
+  shell: |
+    cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  when:
+    - "'vsts.agent.' in svc.key"
+  loop: "{{ ansible_facts.services | dict2items }}"
+  loop_control:
+    loop_var: svc
+  register: vsts_service_home_folders
+- name: Setup the systemd agent overlay file
+  ansible.builtin.include_role:
+    name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
+  vars:
+    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='svc.key') | flatten | list | first }}"
+    vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+- name: Start the service 
+  command: "./svc.sh {{ cmd }}"
+  loop:
+    - start
+  loop_control:
+    loop_var: cmd
+  args:
+    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+
+

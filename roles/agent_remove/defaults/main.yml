@@ -1,5 +1,10 @@
 ---
 # defaults file for agent_remove
-vsts_agent_folder: /opt/vsts-agents/pool_name/host_1
+vsts_agent_working_dir: /opt/vsts-agents/pool_name/host_1
 vsts_agent_registration_token: abcdefghijklmnopqrstuvwxyz
 vsts_username: agentrunninguser
+vsts_agent_environment:
+  AZP_AGENT_USE_LEGACY_HTTP: 'true'
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1
+  DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER: 0
+  DOCKER_HOST: unix:///run/podman/podman.sock

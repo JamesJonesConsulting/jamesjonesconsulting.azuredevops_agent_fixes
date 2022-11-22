@@ -1,2 +1,4 @@
 ---
-# defaults file for extend_systemd_agent_environment
+vsts_systemd_service_name: vsts.agent.something.service
+vsts_agent_working_dir: /opt/vsts-agents/pool_name/host_1
+

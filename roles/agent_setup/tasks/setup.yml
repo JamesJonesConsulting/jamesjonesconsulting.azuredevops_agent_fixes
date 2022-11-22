@@ -10,3 +10,10 @@
     src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
     dest: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
     remote_src: yes
+- name: Change ownership to the agent user
+  file:
+    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    state: directory
+    owner: "{{ agent.username }}"
+    group: "{{ agent.username }}"   
+    recurse: true 

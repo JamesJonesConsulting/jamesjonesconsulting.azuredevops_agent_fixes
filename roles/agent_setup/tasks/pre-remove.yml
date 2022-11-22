@@ -18,7 +18,7 @@
   block:
     - name: Uninstall the agent 
     - ansible.builtin.include_role:
-        name: jamesjonesconsulting.azuredevops_agent_fixes.agent_setup
+        name: jamesjonesconsulting.azuredevops_agent_fixes.agent_remove
       vars:
         vsts_agent_folder: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
         vsts_username: "{{ agent.username }}"

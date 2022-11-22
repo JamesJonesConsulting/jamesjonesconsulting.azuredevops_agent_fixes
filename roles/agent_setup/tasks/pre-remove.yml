@@ -1,3 +1,14 @@
 - name: Print service facts
   ansible.builtin.debug:
     var: ansible_facts.services
+- name: Match services running from that folder 
+  shell: |
+    cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  when:
+    - "'vsts' in svc.key"
+  loop: "{{ ansible_facts.services | dict2items }}"
+  loop_control:
+    loop_var: svc
+  register: vsts_service_home_folders
+- debug:
+    msg: "{{ vsts_service_home_folders }}"

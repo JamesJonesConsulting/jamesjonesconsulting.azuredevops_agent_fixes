@@ -16,8 +16,6 @@
   command: "./config.sh {{ opts | join(' ') }}"
   become: "{{ agent.username }}"
   environment: "{{ vsts_agent_environment }}"
-  args:
-    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
   vars:
     opts:
       - "--unattended"
@@ -28,6 +26,8 @@
       - "--pool {{ agent.pool }}"
       - "--replace"
       - "--work {{ vsts_agent_base_folder }}/{{ agent.folder }}"
+  args:
+    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Update the environment file 
   ini_file:
     path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}/.env"

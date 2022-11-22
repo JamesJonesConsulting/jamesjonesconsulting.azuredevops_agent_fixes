@@ -1,7 +1,20 @@
 ---
-- name: Unconfigure the existing agent
-  shell: |
-    echo {{ vsts_agent_folder }}\config.sh remove --auth 'PAT' --token '{{ vsts_agent_registration_token }}'
-  become: "{{ vsts_username }}"
+- name: Stop and uninstall the service 
+  command: "./svc.sh {{ cmd }}"
+  loop:
+    - stop
+    - uninstall
+  loop_control:
+    loop_var: cmd
   args:
     chdir: "{{ vsts_agent_folder }}"
+- name: Unconfigure the existing agent
+  command: "./config.sh remove --unattended --auth 'PAT' --token '{{ vsts_agent_registration_token }}'"
+  become: "{{ vsts_username }}"
+  ignore_errors: true
+  args:
+    chdir: "{{ vsts_agent_folder }}"
+- name: Ensure the directory does not exist 
+  file:
+    path: "{{ vsts_agent_folder }}"
+    state: absent

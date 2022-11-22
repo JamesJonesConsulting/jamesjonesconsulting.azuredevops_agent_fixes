@@ -9,7 +9,7 @@
   args:
     chdir: "{{ vsts_agent_folder }}"
 - name: Unconfigure the existing agent
-  command: "./config.sh remove --unattended --auth 'PAT' --token '{{ vsts_agent_registration_token }}'"
+  command: "./config.sh remove --unattended --auth 'PAT' --token {{ vsts_agent_registration_token }}"
   become: "{{ vsts_username }}"
   ignore_errors: true
   args:

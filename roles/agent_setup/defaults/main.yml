@@ -4,5 +4,6 @@ vsts_agent_podman_group: docker
 vsts_agent_url: https://dev.azure.com/SomeOrganization
 vsts_agent_registration_token: abcdefghijklmnopqrstuvwxyz
 vsts_agent_tags: []
+vsts_agent_base_folder: /opt/vsts-agents
 
 

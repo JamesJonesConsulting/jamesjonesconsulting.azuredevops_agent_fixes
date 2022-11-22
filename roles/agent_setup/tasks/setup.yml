@@ -14,7 +14,8 @@
     remote_src: yes
 - name: Configure the install of the vsts agent 
   command: "./config.sh {{ opts | join(' ') }}"
-  become: "{{ agent.username }}"
+  become: true
+  become_user: "{{ agent.username }}"
   environment: "{{ vsts_agent_environment }}"
   vars:
     opts:

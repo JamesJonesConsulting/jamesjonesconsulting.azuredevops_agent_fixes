@@ -29,7 +29,8 @@
   ansible.builtin.service_facts:
 - name: Unconfigure the existing agent
   command: "./config.sh remove --unattended --auth 'PAT' --token {{ vsts_agent_registration_token }}"
-  become: "{{ vsts_username }}"
+  become: true
+  become_user: "{{ vsts_username }}"
   environment: "{{ vsts_agent_environment }}"
   ignore_errors: true
   args:

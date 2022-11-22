@@ -11,6 +11,16 @@
     loop_var: svc
   register: vsts_service_home_folders
 - debug:
-    msg: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='stdout') | flatten | list }}"
+    msg: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='stdout') | flatten | list | count }}"
 - debug:
     msg: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+- name: Agent exists and needs to be uninstalled
+  block:
+    - name: Uninstall the agent 
+    - ansible.builtin.include_role:
+        name: jamesjonesconsulting.azuredevops_agent_fixes.agent_setup
+      vars:
+        vsts_agent_folder: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+        vsts_username: "{{ agent.username }}"
+  when:
+    - "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='stdout') | flatten | list | count }}"

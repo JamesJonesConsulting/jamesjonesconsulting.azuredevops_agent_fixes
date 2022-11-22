@@ -1,2 +1,7 @@
 ---
-# tasks file for agent_remove
+- name: Unconfigure the existing agent
+  shell: |
+    echo {{ vsts_agent_folder }}\config.sh remove --auth 'PAT' --token '{{ vsts_agent_registration_token }}'
+  become: "{{ vsts_username }}"
+  args:
+    chdir: "{{ vsts_agent_folder }}"

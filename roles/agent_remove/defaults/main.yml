@@ -1,2 +1,5 @@
 ---
 # defaults file for agent_remove
+vsts_agent_folder: /opt/vsts-agents/pool_name/host_1
+vsts_agent_registration_token: abcdefghijklmnopqrstuvwxyz
+vsts_username: agentrunninguser

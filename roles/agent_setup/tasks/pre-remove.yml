@@ -11,6 +11,6 @@
     loop_var: svc
   register: vsts_service_home_folders
 - debug:
-    msg: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | list }}"
+    msg: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | map(attribute='stdout') | flatten | list }}"
 - debug:
     msg: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"

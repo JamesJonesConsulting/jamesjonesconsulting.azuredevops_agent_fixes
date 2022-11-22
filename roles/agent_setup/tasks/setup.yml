@@ -21,6 +21,7 @@
     opts:
       - "--unattended"
       - "--acceptTeeEula"
+      - "--agent {{ agent.folder | basename }}"
       - "--url {{ vsts_agent_url }}"
       - "--auth PAT"
       - "--token {{ vsts_agent_registration_token }}"

@@ -8,22 +8,22 @@
   loop: "{{ vsts_agents | default([]) }}"
   loop_control:
     loop_var: agent
-# - name: Find the latest release from Github API
-#   ansible.builtin.uri:
-#     url: https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest
-#     return_content: yes
-#   register: latest_release
-#   headers:
-#     Accept: "application/vnd.github+json"
-# - set_fact:
-#     vsts_agent_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
-# - name: Unarchive a file that needs to be downloaded (added in 2.0)
-#   ansible.builtin.unarchive:
-#     src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
-#     dest: /opt/vsts-agent
-#     remote_src: yes
-#   vars:
-#     vsts_agent_version: "{{ vsts_agent_release_tag | regex_replace('v') }}"
+- name: Find the latest release from Github API
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest
+    return_content: yes
+  register: latest_release
+  headers:
+    Accept: "application/vnd.github+json"
+- set_fact:
+    vsts_agent_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
+- name: Setup agents 
+  include_tasks: setup.yml
+  loop: "{{ vsts_agents | default([]) }}"
+  loop_control:
+    loop_var: agent
+  vars:
+    vsts_agent_version: "{{ vsts_agent_release_tag | regex_replace('v') }}"
 
 # BIN_VER=$(curl --silent https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest | jq .tag_name -r)
 # BIN_VER=${BIN_VER#"v"}

@@ -1,0 +1,12 @@
+
+- name: Create directory for the agent
+  file:
+    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    state: directory 
+    owner: "{{ agent.username }}"
+    group: "{{ agent.username }}"
+- name: Unarchive a file that needs to be downloaded (added in 2.0)
+  ansible.builtin.unarchive:
+    src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
+    dest: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    remote_src: yes

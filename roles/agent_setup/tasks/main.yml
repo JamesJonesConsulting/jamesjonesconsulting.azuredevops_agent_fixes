@@ -12,9 +12,9 @@
   ansible.builtin.uri:
     url: https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest
     return_content: yes
+    headers:
+      Accept: "application/vnd.github+json"
   register: latest_release
-  headers:
-    Accept: "application/vnd.github+json"
 - set_fact:
     vsts_agent_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
 - name: Setup agents 

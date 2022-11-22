@@ -1,6 +1,8 @@
 ---
 - name: Populate service facts
   ansible.builtin.service_facts:
+- debug:
+    msg: "{{ vsts_agents | default('bad') }}"
 - name: Uninstall matching agents 
   include_tasks: pre-remove.yml
   loop: "{{ vsts_agents | default([]) }}"

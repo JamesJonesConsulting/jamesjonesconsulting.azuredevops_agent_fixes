@@ -1,6 +1,6 @@
-- name: Print service facts
-  ansible.builtin.debug:
-    var: ansible_facts.services
+# - name: Print service facts
+#   ansible.builtin.debug:
+#     var: ansible_facts.services
 - name: Match services running from that folder 
   shell: |
     cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname

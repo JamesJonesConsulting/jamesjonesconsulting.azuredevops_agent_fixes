@@ -41,6 +41,7 @@ tags: []
 # L(specifiers,https://python-semanticversion.readthedocs.io/en/latest/#requirement-specification). Multiple version
 # range specifiers can be set and are separated by ','
 dependencies:
+  "community.general": "*"
   "git+https://github.com/JamesJonesConsulting/jamesjonesconsulting.podman_socket_group_permissions.git": "main"
 
 # The URL of the originating SCM repository

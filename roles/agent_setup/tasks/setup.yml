@@ -29,7 +29,7 @@
   args:
     chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Update the environment file 
-  ini_file:
+  community.general.ini_file:
     path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}/.env"
     option: "{{ cnf.key }}"
     value: "{{ cnf.value }}"

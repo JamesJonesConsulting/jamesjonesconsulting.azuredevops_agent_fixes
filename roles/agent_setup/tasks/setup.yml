@@ -64,12 +64,27 @@
   register: vsts_service_home_folders
 - debug: 
     msg: "{{ vsts_service_home_folders }}"
-- name: Setup the systemd agent overlay file
-  ansible.builtin.include_role:
-    name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
+- block:
+    - name: Ensure overlay directories existing
+      file:
+        path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
+        state: directory 
+    - name: Add overlays
+      template:
+        src: templates/overlay.conf.j2
+        dest: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d/overlay.conf"
+    - name: Perform a daemon-reload to pick up all the new overlays
+      ansible.builtin.systemd:
+        daemon_reload: yes
   vars:
     vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
-    vsts_agent_working_dir: "{{ vsts_agent_working_dir }}"
+
+# - name: Setup the systemd agent overlay file
+#   ansible.builtin.include_role:
+#     name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
+#   vars:
+#     vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
+#     vsts_agent_working_dir: "{{ vsts_agent_working_dir }}"
 - name: Start the service 
   command: "./svc.sh {{ cmd }}"
   loop:

@@ -4,6 +4,17 @@
 - debug:
     msg: "{{ ansible_facts.services.keys() | select('search','^vsts') | list }}"
 
+- name: Match services running from that folder 
+  shell: |
+    cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  loop: "{{ ansible_facts.services.keys() | select('search','^vsts') | list }}"
+  loop_control:
+    loop_var: svc
+  register: _vsts_service_paths
+
+- debug: 
+    msg: "{{ _vsts_service_paths | map('extract',['svc','stdout']) }}"
+
 - ansible.builtin.set_fact:
     vsts_service_facts: "{{ (vsts_service_facts | default([])) + [{'value': svc, 'key': lookup('pipe','systemctl show -P FragmentPath ' + svc).split('')[1] | dirname}] }}"
   loop: "{{ (ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list | items2dict).keys() }}"

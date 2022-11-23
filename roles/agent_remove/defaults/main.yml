@@ -3,6 +3,7 @@
 vsts_agent_working_dir: /opt/vsts-agents/pool_name/host_1
 vsts_agent_registration_token: abcdefghijklmnopqrstuvwxyz
 vsts_username: agentrunninguser
+vsts_systemd_service_name: vsts.agent.something.service
 vsts_agent_environment:
   AZP_AGENT_USE_LEGACY_HTTP: 'true'
   DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: 1

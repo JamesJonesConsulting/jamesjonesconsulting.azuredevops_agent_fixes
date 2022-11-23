@@ -19,6 +19,7 @@
         name: jamesjonesconsulting.azuredevops_agent_fixes.agent_remove
       vars:
         vsts_username: "{{ agent.username }}"
+        vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') | flatten | list | first }}"
   when:
     - "vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') | flatten | list | count"
 - name: Ensure the directory does not exist 

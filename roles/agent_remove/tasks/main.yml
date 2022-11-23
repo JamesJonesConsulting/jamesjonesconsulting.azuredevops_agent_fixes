@@ -1,17 +1,4 @@
 ---
-- name: Populate service facts
-  ansible.builtin.service_facts:
-  when:
-    - "'services' not in ansible_facts"
-- name: Match services running from that folder 
-  shell: |
-    cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
-  when:
-    - "'vsts.agent.' in svc.key"
-  loop: "{{ ansible_facts.services | dict2items }}"
-  loop_control:
-    loop_var: svc
-  register: vsts_service_home_folders
 - name: Stop and uninstall the service 
   command: "./svc.sh {{ cmd }}"
   loop:
@@ -25,10 +12,6 @@
   file:
     path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
     state: absent
-  vars:
-    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc.key') | flatten | list | first }}"
-- name: Populate service facts
-  ansible.builtin.service_facts:
 - name: Unconfigure the existing agent
   command: "./config.sh remove --unattended --auth 'PAT' --token {{ vsts_agent_registration_token }}"
   become: true

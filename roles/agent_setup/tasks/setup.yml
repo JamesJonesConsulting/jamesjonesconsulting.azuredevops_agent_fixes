@@ -62,8 +62,6 @@
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
-- debug: 
-    msg: "{{ vsts_service_home_folders }}"
 - block:
     - name: Ensure overlay directories existing
       file:
@@ -78,13 +76,6 @@
         daemon_reload: yes
   vars:
     vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
-
-# - name: Setup the systemd agent overlay file
-#   ansible.builtin.include_role:
-#     name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
-#   vars:
-#     vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
-#     vsts_agent_working_dir: "{{ vsts_agent_working_dir }}"
 - name: Start the service 
   command: "./svc.sh {{ cmd }}"
   loop:

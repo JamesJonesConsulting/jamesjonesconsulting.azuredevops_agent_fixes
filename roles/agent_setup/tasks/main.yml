@@ -8,9 +8,6 @@
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
-
-- debug:
-    msg: "{{ vsts_service_home_folders }}"
 - name: Uninstall matching agents 
   include_tasks: pre-remove.yml
   loop: "{{ vsts_agents | default([]) }}"

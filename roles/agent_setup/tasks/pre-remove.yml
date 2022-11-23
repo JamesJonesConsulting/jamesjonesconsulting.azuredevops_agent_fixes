@@ -1,16 +1,6 @@
 ---
 - set_fact:
     vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
-# - name: Match services running from that folder 
-#   shell: |
-#     cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
-#   when:
-#     - "'vsts.agent.' in svc.key"
-#   # loop: "{{ ansible_facts.services | dict2items }}"
-#   loop: "{{ ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list}}"
-#   loop_control:
-#     loop_var: svc
-#   register: vsts_service_home_folders
 - name: Agent exists and needs to be uninstalled
   block:
     - name: Uninstall the agent 

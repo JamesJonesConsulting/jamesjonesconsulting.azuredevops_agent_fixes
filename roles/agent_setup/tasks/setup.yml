@@ -57,11 +57,8 @@
   ansible.builtin.service_facts:
 - name: Match services running from that folder 
   shell: |
-    cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
-  when:
-    - "'vsts.agent.' in svc.key"
-  # loop: "{{ ansible_facts.services | dict2items }}"
-  loop: "{{ ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list}}"
+    cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  loop: "{{ ansible_facts.services.keys() | select('search','^vsts') | list }}"
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
@@ -71,7 +68,7 @@
   ansible.builtin.include_role:
     name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
   vars:
-    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc.key') | flatten | list | first }}"
+    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
     vsts_agent_working_dir: "{{ vsts_agent_working_dir }}"
 - name: Start the service 
   command: "./svc.sh {{ cmd }}"

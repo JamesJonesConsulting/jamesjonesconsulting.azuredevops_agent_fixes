@@ -1,6 +1,8 @@
 ---
 - name: Populate service facts
   ansible.builtin.service_facts:
+  when:
+    - "'services' not in ansible_facts"
 - name: Match services running from that folder 
   shell: |
     cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname

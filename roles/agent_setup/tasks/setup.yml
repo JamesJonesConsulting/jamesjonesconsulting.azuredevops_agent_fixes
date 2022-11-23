@@ -70,11 +70,11 @@
     loop_var: svc
   register: vsts_service_home_folders
 - block:
-    - name: Ensure overlay directories existing
+    - name: Ensure Azure DevOps agent overlay directory exists
       file:
         path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
         state: directory 
-    - name: Add overlays
+    - name: Add Azure DevOps agent overlay to pick up environment variables
       template:
         src: templates/overlay.conf.j2
         dest: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d/overlay.conf"

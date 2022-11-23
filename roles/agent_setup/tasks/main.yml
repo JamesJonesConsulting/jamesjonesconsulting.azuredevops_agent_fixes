@@ -1,8 +1,18 @@
 ---
 - name: Populate service facts
   ansible.builtin.service_facts:
+- ansible.builtin.set_fact:
+    vsts_service_facts: "{{ ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list | items2dict }}"
+- name: Match services running from that folder 
+  shell: |
+    cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  loop: "{{ vsts_service_facts.keys() }}"
+  loop_control:
+    loop_var: svc
+  register: vsts_service_home_folders
+
 - debug:
-    msg: "{{ vsts_agents | default('bad') }}"
+    msg: "{{ vsts_service_home_folders }}"
 - name: Uninstall matching agents 
   include_tasks: pre-remove.yml
   loop: "{{ vsts_agents | default([]) }}"

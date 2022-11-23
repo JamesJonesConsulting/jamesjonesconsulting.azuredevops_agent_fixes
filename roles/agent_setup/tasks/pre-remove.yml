@@ -10,8 +10,6 @@
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
-- debug:
-    msg: "{{ vsts_service_home_folders.results }}"
 - name: Agent exists and needs to be uninstalled
   block:
     - name: Uninstall the agent 

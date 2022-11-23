@@ -1,14 +1,16 @@
-
+---
+- set_fact:
+    vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Create directory for the agent
   file:
-    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    path: "{{ vsts_agent_working_dir }}"
     state: directory 
     owner: "{{ agent.username }}"
     group: "{{ agent.username }}"
 - name: Unarchive a file that needs to be downloaded (added in 2.0)
   ansible.builtin.unarchive:
     src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
-    dest: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    dest: "{{ vsts_agent_working_dir }}"
     owner: "{{ agent.username }}"
     group: "{{ agent.username }}"   
     remote_src: yes
@@ -27,12 +29,12 @@
       - "--token {{ vsts_agent_registration_token }}"
       - "--pool {{ agent.pool }}"
       - "--replace"
-      - "--work {{ vsts_agent_base_folder }}/{{ agent.folder }}"
+      - "--work {{ vsts_agent_working_dir }}"
   args:
-    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    chdir: "{{ vsts_agent_working_dir }}"
 - name: Update the environment file 
   community.general.ini_file:
-    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}/.env"
+    path: "{{ vsts_agent_working_dir }}/.env"
     option: "{{ cnf.key }}"
     value: "{{ cnf.value }}"
     section: null
@@ -47,7 +49,7 @@
   loop_control:
     loop_var: cmd
   args:
-    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    chdir: "{{ vsts_agent_working_dir }}"
 - name: Reload systemd 
   ansible.builtin.systemd:
     daemon_reload: yes
@@ -66,8 +68,8 @@
   ansible.builtin.include_role:
     name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment
   vars:
-    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='svc.key') | flatten | list | first }}"
-    vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc.key') | flatten | list | first }}"
+    vsts_agent_working_dir: "{{ vsts_agent_working_dir }}"
 - name: Start the service 
   command: "./svc.sh {{ cmd }}"
   loop:
@@ -75,6 +77,6 @@
   loop_control:
     loop_var: cmd
   args:
-    chdir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    chdir: "{{ vsts_agent_working_dir }}"
 
 

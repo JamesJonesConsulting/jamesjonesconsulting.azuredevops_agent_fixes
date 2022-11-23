@@ -1,3 +1,6 @@
+---
+- set_fact:
+    vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Match services running from that folder 
   shell: |
     cat $(systemctl show -P FragmentPath {{ svc.key }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
@@ -15,11 +18,10 @@
       ansible.builtin.include_role:
         name: jamesjonesconsulting.azuredevops_agent_fixes.agent_remove
       vars:
-        vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
         vsts_username: "{{ agent.username }}"
   when:
-    - "vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', ([vsts_agent_base_folder, agent.folder] | join('/'))) | map(attribute='stdout') | flatten | list | count"
+    - "vsts_service_home_folders.results | selectattr('stdout', 'defined') | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') | flatten | list | count"
 - name: Ensure the directory does not exist 
   file:
-    path: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+    path: "{{ vsts_agent_working_dir }}"
     state: absent

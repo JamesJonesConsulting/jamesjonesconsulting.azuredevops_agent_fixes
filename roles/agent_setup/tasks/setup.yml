@@ -65,6 +65,8 @@
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
+- debug: 
+    msg: "{{ vsts_service_home_folders }}"
 - name: Setup the systemd agent overlay file
   ansible.builtin.include_role:
     name: jamesjonesconsulting.azuredevops_agent_fixes.extend_systemd_agent_environment

@@ -2,6 +2,14 @@
 - name: Populate service facts
   ansible.builtin.service_facts:
 - ansible.builtin.set_fact:
+    vsts_service_facts: "{{ (vsts_service_facts | default([])) + ['value': svc, 'key': lookup('pipe','systemctl show -P FragmentPath ' + svc).split('')[1] | dirname] }}"
+  loop: "{{ (ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list | items2dict).keys() }}"
+  loop_control:
+    loop_var: svc
+
+- debug: 
+    msg: "{{ vsts_service_facts }}"
+- ansible.builtin.set_fact:
     vsts_service_facts: "{{ ansible_facts.services | dict2items | selectattr('key','search','^vsts') | list | items2dict }}"
 - name: Match services running from that folder 
   shell: |

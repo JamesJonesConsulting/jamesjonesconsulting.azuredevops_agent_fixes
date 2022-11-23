@@ -1,4 +1,11 @@
 ---
+- name: Setup Podman socket permissions
+  include_role:
+    name: jamesjonesconsulting.podman_socket_group_permissions.permissions_setup
+  vars:
+    podman_user_group: "{{ vsts_agent_podman_group }}"
+    podman_users:
+      - "{{ agent.username }}"
 - set_fact:
     vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Create directory for the agent

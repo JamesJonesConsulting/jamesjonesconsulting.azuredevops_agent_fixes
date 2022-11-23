@@ -13,7 +13,7 @@
   register: _vsts_service_paths
 
 - debug: 
-    msg: "{{ _vsts_service_paths.results | map('extract',['svc','stdout']) }}"
+    msg: "{{ _vsts_service_paths.results }}"
 
 - ansible.builtin.set_fact:
     vsts_service_facts: "{{ (vsts_service_facts | default([])) + [{'value': svc, 'key': lookup('pipe','systemctl show -P FragmentPath ' + svc).split('')[1] | dirname}] }}"

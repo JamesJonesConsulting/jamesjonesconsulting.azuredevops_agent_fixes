@@ -1,17 +1,23 @@
 ---
-- set_fact:
+- name: Set the Agent working directory
+  ansible.builtin.set_fact:
     vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Agent exists and needs to be uninstalled
+  when:
+    - >-
+        vsts_service_home_folders.results |
+        selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') |
+        flatten | list | count | bool
   block:
-    - name: Uninstall the agent 
+    - name: Uninstall the agent
       ansible.builtin.include_role:
         name: jamesjonesconsulting.azuredevops_agent_fixes.agent_remove
       vars:
         vsts_username: "{{ agent.username }}"
-        vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') | flatten | list | first }}"
-  when:
-    - "vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='stdout') | flatten | list | count"
-- name: Ensure the directory does not exist 
-  file:
+        vsts_systemd_service_name: "{{ vsts_service_home_folders.results |
+          selectattr('stdout', 'equalto', vsts_agent_working_dir) |
+          map(attribute='stdout') | flatten | list | first }}"
+- name: Ensure the directory does not exist
+  ansible.builtin.file:
     path: "{{ vsts_agent_working_dir }}"
     state: absent

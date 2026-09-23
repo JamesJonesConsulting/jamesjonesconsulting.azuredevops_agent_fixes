@@ -1,13 +1,14 @@
 ---
 - name: Stop and uninstall the service
   ansible.builtin.command: "./svc.sh {{ cmd }}"
+  changed_when: true
   loop:
     - stop
     - uninstall
   loop_control:
     loop_var: cmd
   args:
-    chdir: "{{ vsts_agent_working_dir }}"
+    chdir: "{{ agent_remove_working_dir }}"
 - name: Remove the service overlay directory
   ansible.builtin.file:
     path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
@@ -19,8 +20,8 @@
   environment: "{{ vsts_agent_environment }}"
   ignore_errors: true
   args:
-    chdir: "{{ vsts_agent_working_dir }}"
+    chdir: "{{ agent_remove_working_dir }}"
 - name: Ensure the directory does not exist
   ansible.builtin.file:
-    path: "{{ vsts_agent_working_dir }}"
+    path: "{{ agent_remove_working_dir }}"
     state: absent

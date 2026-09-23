@@ -19,7 +19,10 @@
   ansible.builtin.service_facts:
 - name: Match services running from that folder
   ansible.builtin.shell: |
+    set -o pipefail
     cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
+  args:
+    executable: /bin/bash
   changed_when: true
   loop: "{{ ansible_facts.services.keys() | select('search', '^vsts') | list }}"
   loop_control:

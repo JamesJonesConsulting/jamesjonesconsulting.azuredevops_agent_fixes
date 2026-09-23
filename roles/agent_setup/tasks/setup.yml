@@ -1,33 +1,34 @@
 ---
 - name: Setup Podman socket permissions
-  include_role:
+  ansible.builtin.include_role:
     name: jamesjonesconsulting.podman_socket_group_permissions.permissions_setup
   vars:
     podman_user_group: "{{ vsts_agent_podman_group }}"
     podman_users:
       - "{{ agent.username }}"
-- set_fact:
-    vsts_agent_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
+- name: Set the agent working directory
+  ansible.builtin.set_fact:
+    agent_setup_working_dir: "{{ vsts_agent_base_folder }}/{{ agent.folder }}"
 - name: Create directory for the agent
-  file:
-    path: "{{ vsts_agent_working_dir }}"
-    state: directory 
+  ansible.builtin.file:
+    path: "{{ agent_setup_working_dir }}"
+    state: directory
     owner: "{{ agent.username }}"
     group: "{{ agent.username }}"
+    mode: "0755"
 - name: Unarchive latest agent tar.gz file that needs to be downloaded
   ansible.builtin.unarchive:
-    # https://download.agent.dev.azure.com/agent/5.279.0/vsts-agent-linux-x64-5.279.0.tar.gz
-    src: "https://download.agent.dev.azure.com/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
-    # src: "https://vstsagentpackage.azureedge.net/agent/{{ vsts_agent_version }}/vsts-agent-linux-x64-{{ vsts_agent_version }}.tar.gz"
-    dest: "{{ vsts_agent_working_dir }}"
+    src: "https://download.agent.dev.azure.com/agent/{{ agent_setup_version }}/vsts-agent-linux-x64-{{ agent_setup_version }}.tar.gz"
+    dest: "{{ agent_setup_working_dir }}"
     owner: "{{ agent.username }}"
-    group: "{{ agent.username }}"   
-    remote_src: yes
-- name: Configure the install of the vsts agent 
-  command: "./config.sh {{ opts | join(' ') }}"
+    group: "{{ agent.username }}"
+    remote_src: true
+- name: Configure the install of the vsts agent
+  ansible.builtin.command: "./config.sh {{ opts | join(' ') }}"
   become: true
   become_user: "{{ agent.username }}"
   environment: "{{ vsts_agent_environment }}"
+  changed_when: true
   vars:
     opts:
       - "--unattended"
@@ -38,60 +39,68 @@
       - "--token {{ vsts_agent_registration_token }}"
       - "--pool {{ agent.pool }}"
       - "--replace"
-      - "--work {{ vsts_agent_working_dir }}"
+      - "--work {{ agent_setup_working_dir }}"
   args:
-    chdir: "{{ vsts_agent_working_dir }}"
-- name: Update the environment file 
+    chdir: "{{ agent_setup_working_dir }}"
+- name: Update the environment file
   community.general.ini_file:
-    path: "{{ vsts_agent_working_dir }}/.env"
+    path: "{{ agent_setup_working_dir }}/.env"
     option: "{{ cnf.key }}"
     value: "{{ cnf.value }}"
     section: null
     no_extra_spaces: true
+    mode: "0644"
   loop: "{{ vsts_agent_environment | dict2items }}"
   loop_control:
     loop_var: cnf
-- name: Install the service 
-  command: "./svc.sh {{ cmd }}"
+- name: Install the service
+  ansible.builtin.command: "./svc.sh {{ cmd }}"
+  changed_when: true
   loop:
     - install
   loop_control:
     loop_var: cmd
   args:
-    chdir: "{{ vsts_agent_working_dir }}"
-- name: Reload systemd 
+    chdir: "{{ agent_setup_working_dir }}"
+- name: Reload systemd
   ansible.builtin.systemd:
-    daemon_reload: yes
+    daemon_reload: true
 - name: Populate service facts
   ansible.builtin.service_facts:
-- name: Match services running from that folder 
-  shell: |
+- name: Match services running from that folder
+  ansible.builtin.shell: |
+    set -o pipefail
     cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
-  loop: "{{ ansible_facts.services.keys() | select('search','^vsts') | list }}"
+  changed_when: true
+  loop: "{{ ansible_facts.services.keys() | select('search', '^vsts') | list }}"
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
-- block:
+- name: Handling the agent systemd overlay
+  vars:
+    vsts_systemd_service_name: >-
+      {{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', agent_setup_working_dir) |
+      map(attribute='svc') | flatten | list | first }}"
+  block:
     - name: Ensure Azure DevOps agent overlay directory exists
-      file:
+      ansible.builtin.file:
         path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
-        state: directory 
+        state: directory
+        mode: "0755"
     - name: Add Azure DevOps agent overlay to pick up environment variables
-      template:
+      ansible.builtin.template:
         src: templates/overlay.conf.j2
         dest: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d/overlay.conf"
+        mode: "0644"
     - name: Perform a daemon-reload to pick up all the new overlays
       ansible.builtin.systemd:
-        daemon_reload: yes
-  vars:
-    vsts_systemd_service_name: "{{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', vsts_agent_working_dir) | map(attribute='svc') | flatten | list | first }}"
-- name: Start the service 
-  command: "./svc.sh {{ cmd }}"
+        daemon_reload: true
+- name: Start the service
+  ansible.builtin.command: "./svc.sh {{ cmd }}"
+  changed_when: true
   loop:
     - start
   loop_control:
     loop_var: cmd
   args:
-    chdir: "{{ vsts_agent_working_dir }}"
-
-
+    chdir: "{{ agent_setup_working_dir }}"

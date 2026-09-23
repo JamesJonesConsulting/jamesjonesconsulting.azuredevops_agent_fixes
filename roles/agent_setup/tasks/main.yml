@@ -42,11 +42,11 @@
   register: latest_release
 - name: Get the latest tag
   ansible.builtin.set_fact:
-    vsts_agent_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
+    agent_setup_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
 - name: Setup agents
   ansible.builtin.include_tasks: setup.yml
   loop: "{{ vsts_agents | default([]) }}"
   loop_control:
     loop_var: agent
   vars:
-    vsts_agent_version: "{{ vsts_agent_release_tag | regex_replace('v') }}"
+    agent_setup_version: "{{ agent_setup_release_tag | regex_replace('v') }}"

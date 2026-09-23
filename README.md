@@ -32,7 +32,7 @@ The role is called like this in an ansible playbook (note: you will need to be r
 include_role:
   name: jamesjonesconsulting.azuredevops_agent_fixes.agent_setup
 vars:
-  vsts_agents: 
+  agent_setup_host_agents: 
     - pool: PrivateHosted
       name: agentvm_1
       folder: PrivateHosted/agentvm_1
@@ -44,7 +44,7 @@ vars:
 
 ### Options for the ansible collection `agent_setup` role.
 
-* `vsts_agents` - This is an array of settings to pass the name of the `pool`, the `name` of the agent in the pool, the `folder` where it will be installed off `/opt/vsts-agents` on the host and finally the `username` the agent will be running as. Note: an agent will be installed for each element of this array.
+* `agent_setup_host_agents` - This is an array of settings to pass the name of the `pool`, the `name` of the agent in the pool, the `folder` where it will be installed off `/opt/vsts-agents` on the host and finally the `username` the agent will be running as. Note: an agent will be installed for each element of this array.
 * `vsts_agent_podman_group` - This is passed to the `jamesjonesconsulting.podman_socket_group_permissions` collection which does all the 'podman' magic. It's a 'default' so you can skip it if you don't need to override it.
 * `vsts_agent_url` - Pass in the url of your organization where the agents will be setup in the pool(s) created.
 * `vsts_agent_registration_token` - This the PAT you must create to install Azure DevOps agents.

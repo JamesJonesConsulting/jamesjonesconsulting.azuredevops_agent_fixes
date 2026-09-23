@@ -39,10 +39,10 @@
     return_content: true
     headers:
       Accept: "application/vnd.github+json"
-  register: latest_release
+  register: agent_setup_latest_release
 - name: Get the latest tag
   ansible.builtin.set_fact:
-    agent_setup_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
+    agent_setup_release_tag: "{{ (agent_setup_latest_release.content | from_json)['tag_name'] }}"
 - name: Setup agents
   ansible.builtin.include_tasks: setup.yml
   loop: "{{ agent_setup_host_agents | default([]) }}"

@@ -5,7 +5,7 @@
 - name: Agent exists and needs to be uninstalled
   when:
     - >-
-        vsts_service_home_folders.results |
+        agent_setup_service_home_folders.results |
         selectattr('stdout', 'equalto', agent_setup_working_dir) | map(attribute='stdout') |
         flatten | list | count | bool
   block:
@@ -15,7 +15,7 @@
       vars:
         vsts_username: "{{ agent.username }}"
         agent_remove_working_dir: "{{ agent_setup_working_dir }}"
-        vsts_systemd_service_name: "{{ vsts_service_home_folders.results |
+        agent_remove_systemd_service_name: "{{ agent_setup_service_home_folders.results |
           selectattr('stdout', 'equalto', agent_setup_working_dir) |
           map(attribute='stdout') | flatten | list | first }}"
 - name: Ensure the directory does not exist

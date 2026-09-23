@@ -75,22 +75,22 @@
   loop: "{{ ansible_facts.services.keys() | select('search', '^vsts') | list }}"
   loop_control:
     loop_var: svc
-  register: vsts_service_home_folders
+  register: agent_setup_service_home_folders
 - name: Handling the agent systemd overlay
   vars:
-    vsts_systemd_service_name: >-
-      {{ vsts_service_home_folders.results | selectattr('stdout', 'equalto', agent_setup_working_dir) |
+    agent_setup_systemd_service_name: >-
+      {{ agent_setup_service_home_folders.results | selectattr('stdout', 'equalto', agent_setup_working_dir) |
       map(attribute='svc') | flatten | list | first }}"
   block:
     - name: Ensure Azure DevOps agent overlay directory exists
       ansible.builtin.file:
-        path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
+        path: "/etc/systemd/system/{{ agent_setup_systemd_service_name }}.d"
         state: directory
         mode: "0755"
     - name: Add Azure DevOps agent overlay to pick up environment variables
       ansible.builtin.template:
         src: templates/overlay.conf.j2
-        dest: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d/overlay.conf"
+        dest: "/etc/systemd/system/{{ agent_setup_systemd_service_name }}.d/overlay.conf"
         mode: "0644"
     - name: Perform a daemon-reload to pick up all the new overlays
       ansible.builtin.systemd:

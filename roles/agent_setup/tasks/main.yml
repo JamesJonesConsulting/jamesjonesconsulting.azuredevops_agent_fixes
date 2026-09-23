@@ -27,7 +27,7 @@
   loop: "{{ ansible_facts.services.keys() | select('search', '^vsts') | list }}"
   loop_control:
     loop_var: svc
-  register: vsts_service_home_folders
+  register: agent_setup_service_home_folders
 - name: Uninstall matching agents
   ansible.builtin.include_tasks: pre-remove.yml
   loop: "{{ agent_setup_host_agents | default([]) }}"

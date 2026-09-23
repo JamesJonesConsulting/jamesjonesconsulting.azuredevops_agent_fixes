@@ -11,7 +11,7 @@
     chdir: "{{ agent_remove_working_dir }}"
 - name: Remove the service overlay directory
   ansible.builtin.file:
-    path: "/etc/systemd/system/{{ vsts_systemd_service_name }}.d"
+    path: "/etc/systemd/system/{{ agent_remove_systemd_service_name }}.d"
     state: absent
 - name: Unconfigure the existing agent
   ansible.builtin.command: "./config.sh remove --unattended --auth 'PAT' --token {{ vsts_agent_registration_token }}"

@@ -1,45 +1,47 @@
 ---
 - name: Provide a compatable version of libssl (fedora)
-  yum:
+  ansible.builtin.yum:
     name:
       - openssl1.1
-    state: latest 
+    state: latest
   when:
     - "ansible_facts['distribution'] in ['Fedora']"
     - "ansible_facts['distribution_major_version'] in ['36','37']"
 - name: Provide a compatable version of libssl (fedora)
-  yum:
+  ansible.builtin.yum:
     name:
       - compat-openssl11
-    state: latest 
+    state: latest
   when:
     - "ansible_facts['distribution'] in ['RedHat','CentOS','Rocky']"
     - "ansible_facts['distribution_major_version'] in ['8','9']"
 - name: Populate service facts
   ansible.builtin.service_facts:
-- name: Match services running from that folder 
-  shell: |
+- name: Match services running from that folder
+  ansible.builtin.shell: |
     cat $(systemctl show -P FragmentPath {{ svc }}) | grep ExecStart | cut -f 2 -d '=' | head -n 1 | xargs dirname
-  loop: "{{ ansible_facts.services.keys() | select('search','^vsts') | list }}"
+  changed_when: true
+  loop: "{{ ansible_facts.services.keys() | select('search', '^vsts') | list }}"
   loop_control:
     loop_var: svc
   register: vsts_service_home_folders
-- name: Uninstall matching agents 
-  include_tasks: pre-remove.yml
+- name: Uninstall matching agents
+  ansible.builtin.include_tasks: pre-remove.yml
   loop: "{{ vsts_agents | default([]) }}"
   loop_control:
     loop_var: agent
 - name: Find the latest release from Github API
   ansible.builtin.uri:
     url: https://api.github.com/repos/microsoft/azure-pipelines-agent/releases/latest
-    return_content: yes
+    return_content: true
     headers:
       Accept: "application/vnd.github+json"
   register: latest_release
-- set_fact:
+- name: Get the latest tag
+  ansible.builtin.set_fact:
     vsts_agent_release_tag: "{{ (latest_release.content | from_json)['tag_name'] }}"
-- name: Setup agents 
-  include_tasks: setup.yml
+- name: Setup agents
+  ansible.builtin.include_tasks: setup.yml
   loop: "{{ vsts_agents | default([]) }}"
   loop_control:
     loop_var: agent
